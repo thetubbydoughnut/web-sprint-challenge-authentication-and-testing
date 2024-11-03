@@ -17,12 +17,17 @@ router.post('/register', async (req, res) => {
       return res.status(400).json("username taken");
     }
 
-    const hash = bcrypt.hashSync(password, 8); // Using 2^8 rounds
-    
-    const [newUser] = await db('users').insert({
+    const hash = bcrypt.hashSync(password, 8);
+    // Insert the user and get the id
+    const [id] = await db('users').insert({
       username,
       password: hash,
-    }, ['id', 'username', 'password']);
+    });
+
+    // Fetch the newly created user to return
+    const newUser = await db('users')
+      .where('id', id)
+      .first();
 
     res.status(201).json(newUser);
   } catch (err) {
